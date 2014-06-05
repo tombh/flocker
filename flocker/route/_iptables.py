@@ -75,7 +75,7 @@ def create(reactor, ip, port):
     tcp.dport = unicode(port).encode("ascii")
     dnat = rule.create_target(b"DNAT")
     dnat.to_destination = unicode(ip).encode("ascii")
-    output.append_rule(output)
+    output.append_rule(rule)
 
     # The network stack only considers forwarding traffic when certain system
     # configuration is in place.

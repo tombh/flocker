@@ -35,6 +35,7 @@ def create(reactor, ip, port):
     # right destination.
     prerouting = Chain(Table(Table.NAT), b"PREROUTING")
     rule = Rule()
+    rule.protocol = b"tcp"
     tcp = rule.create_match(b"tcp")
     tcp.dport = unicode(port).encode("ascii")
     dnat = rule.create_target(b"DNAT")
@@ -56,6 +57,7 @@ def create(reactor, ip, port):
     # ever changes the rule gets updated.  So we'll just masquerade for now.
     postrouting = Chain(Table(Table.NAT), b"POSTROUTING")
     rule = Rule()
+    rule.protocol = b"tcp"
     tcp = rule.create_match(b"tcp")
     tcp.dport = unicode(port).encode("ascii")
     rule.create_target(b"MASQUERADE")
@@ -68,6 +70,7 @@ def create(reactor, ip, port):
     # did in the PREROUTING chain.
     output = Chain(Table(Table.NAT), b"OUTPUT")
     rule = Rule()
+    rule.protocol = b"tcp"
     tcp = rule.create_match(b"tcp")
     tcp.dport = unicode(port).encode("ascii")
     dnat = rule.create_target(b"DNAT")

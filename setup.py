@@ -67,7 +67,7 @@ setup(
 
     extras_require={
         # This extra allows you to build the documentation for Flocker.
-        "doc": ["Sphinx==1.2", "sphinx-rtd-theme==0.1.6"],
+        "doc": ["Sphinx==1.2", "sphinx-rtd-theme==0.1.6", "hieroglyph"],
         # This extra is for developers who need to work on Flocker itself.
         "dev": [
             # pyflakes is pretty critical to have around to help point out

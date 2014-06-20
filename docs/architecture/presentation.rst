@@ -164,7 +164,7 @@ Example - trac configuration
 
 Maybe something like
 
-.. code-block::
+.. code-block:: python
 
   trac = {
       "image": "clusterhq/trac",
@@ -185,7 +185,7 @@ Example - postgresql configuration
 
 Maybe something like
 
-.. code-block::
+.. code-block:: python
 
    postgresql = {
        "image": "clusterhq/postgresql",
@@ -200,7 +200,7 @@ Example - elasticsearch configuration
 
 Maybe something like
 
-.. code-block::
+.. code-block:: python
 
    elasticsearch = {
        "image": "clusterhq/elasticsearch",
@@ -215,7 +215,7 @@ Example - kibana configuration
 
 Maybe something like
 
-.. code-block::
+.. code-block:: python
 
    kibana = {
        "image": "clusterhq/elasticsearch",
@@ -235,7 +235,7 @@ Example - Application Configuration
 
 Aggregate all of the applications
 
-.. code-block::
+.. code-block:: python
 
    application_config = {
        "trac": trac,
@@ -250,7 +250,7 @@ Example - Deployment Configuration
 
 Explicitly place containers for the applications
 
-.. code-block::
+.. code-block:: python
 
    deployment_config = {
        "nodes": {
@@ -265,7 +265,7 @@ Example - User Interaction
 
 Imagine some yaml files containing the previously given application and deployment configuration objects.
 
-.. code-block::
+.. code-block:: sh
 
    $ flocker-cluster deploy application_config.yml deployment_config.yml
    Deployed `trac` to 1.1.1.1.
@@ -283,7 +283,7 @@ Give it an entire machine to itself.
 
 The deployment configuration changes to:
 
-.. code-block::
+.. code-block:: python
 
    deployment_config = {
        "nodes": {

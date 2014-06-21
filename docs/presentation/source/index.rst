@@ -73,33 +73,30 @@ Interface
 
 * Flocker (initially) provides (only) a command-line interface.
 * The CLI allows deployment or redeployment of containers across machines.
-* The tool operates on two distinct pieces of configuration:
-  * Application
-  * Deployment
+* The tool operates on two distinct pieces of configuration: *Application* and *Deployment*.
 * Your sysadmin runs a command like ``flocker-cluster deploy application-config.yml deployment-config.yml`` on their laptop.
 
 
 Application Configuration
 =========================
 
- * Application configuration describes what you want to run in a container.
-   * it identifies a Docker image
-   * a volume mountpoint
-   * other containers to link to
-   * externally "routed" ports
- * This configuration is expected to be shared between development, staging, production, etc environments.
- * Flocker 0.1 may not support automatic re-deployment of application configuration changes
+* Describes what you want to run in a container.  It contains:
+* a Docker image name
+* a volume mountpoint
+* other containers to link to
+* externally "routed" ports
+* This configuration is expected to be shared between development, staging, production, etc environments.
+* Flocker 0.1 may not support automatic re-deployment of application configuration changes
 
 
 Deployment Configuration
 ========================
 
-* Deployment configuration describes how you want your containers deployed.
-  * which machines run which containers
-* This configuration can vary between development, staging, production, etc environments
-  * Developer might want to deploy all of the containers on their laptop
-  * Production might put database on one machine, web server on another machine, etc
-* Reacting to changes to this configuration is the primary focus of Flocker 0.1.
+* Deployment configuration describes how you want your containers deployed.  It specifies which machines run which containers.
+* This configuration can vary between development, staging, production, etc environments.
+* Developer might want to deploy all of the containers on their laptop
+* Production might put database on one machine, web server on another machine, etc
+* Realizing changes to this configuration is the primary focus of Flocker 0.1.
 
 
 Overall Implementation Strategy
@@ -135,12 +132,18 @@ Managing Containers
 
 * Gear is used to start, stop, and enumerate containers.
 * Gear works by creating systemd units.
-* Systemd units are a good way to provide admin tools for:
-  * logging and state inspection
-  * starting/stopping (including at boot)
-  * inter-unit dependency management
-  * lots of other stuff
 * Gear helps support the implementation of links
+
+
+Systemd
+=======
+
+Systemd units are a good way to provide admin tools for:
+
+* logging and state inspection
+* starting/stopping (including at boot)
+* inter-unit dependency management
+* lots of other stuff
 
 
 Volumes

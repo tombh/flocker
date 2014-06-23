@@ -41,14 +41,18 @@ Orchestration
 Routing
 =======
 
+Flocker facilitates exposing containers to the world.
+
 * Container configuration includes externally visible TCP port numbers.
 * Connect to any machine on a Flocker cluster and traffic is routed to the machine hosting the appropriate container (initially based only on port).
-* Your external domain (``www.example.com``) configured to point at all nodes in the Flocker cluster (eg ``203.0.113.2``, ``203.0.113.3``)
+* ``www.example.com`` configured to point at all Flocker cluster nodes.
 * Lets you express "Expose Apache container's port 443 to the world."
 
 
 Cross-container Communication (Links)
 =====================================
+
+Flocker facilitates communication between containers.
 
 * Container configuration describes links (port numbers) which are required to other containers. E.g. your web application container needs to talk to your database.
 * Connections to any linked port inside the source container are routed to the correct port inside the target container.
@@ -58,7 +62,9 @@ Cross-container Communication (Links)
 Application State
 =================
 
-* Flocker manages ZFS filesystems as Docker volumes.  It attaches them to your containers.
+Flocker manages ZFS filesystems as Docker volumes.
+
+* It attaches them to your containers.
 * Flocker provides tools for copying those volumes between machines.
 * If an application container is moved from one machine to another, Flocker automatically moves the volume with it.
 * Lets you express "The PostgreSQL container has a volume mounted at /var/lib/postgresql/."
@@ -71,22 +77,29 @@ User Experience
 Interface
 =========
 
-* Flocker (initially) provides (only) a command-line interface.
+Flocker (initially) provides (only) a command-line interface.
+
 * The CLI allows deployment or redeployment of containers across machines.
 * The tool operates on two distinct pieces of configuration: *Application* and *Deployment*.
-* Your sysadmin runs a command like ``flocker-cluster deploy application-config.yml deployment-config.yml`` on their laptop.
+* Your sysadmin runs a command like::
+
+    flocker-cluster deploy app-cfg.yml deploy-cfg.yml
+
+  on their laptop.
 
 
 Application Configuration
 =========================
 
-* Describes what you want to run in a container.  It contains:
+Describes what you want to run in a container.  It contains:
+
 * a Docker image name
 * a volume mountpoint
 * other containers to link to
 * externally "routed" ports
-* This configuration is expected to be shared between development, staging, production, etc environments.
-* Flocker 0.1 may not support automatic re-deployment of application configuration changes
+
+This configuration is expected to be shared between development, staging, production, etc environments.
+Flocker 0.1 may not support automatic re-deployment of application configuration changes
 
 
 Deployment Configuration

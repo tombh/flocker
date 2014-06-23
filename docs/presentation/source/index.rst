@@ -35,7 +35,7 @@ Orchestration
 
 * Flocker can run multiple containers on multiple machines.
 * Flocker offers a configuration language to specify what to run and where to run it.
-* "Run Apache container on node1.  Run PostgreSQL and ElasticSearch containers on node2."
+* Lets you express "Run Apache container on node1.  Run PostgreSQL and ElasticSearch containers on node2."
 
 
 Routing
@@ -44,7 +44,7 @@ Routing
 * Container configuration includes externally visible TCP port numbers.
 * Connect to any machine on a Flocker cluster and traffic is routed to the machine hosting the appropriate container (initially based only on port).
 * Your external domain (``www.example.com``) configured to point at all nodes in the Flocker cluster (eg ``203.0.113.2``, ``203.0.113.3``)
-* "Expose Apache container's port 443 to the world."
+* Lets you express "Expose Apache container's port 443 to the world."
 
 
 Cross-container Communication (Links)
@@ -52,7 +52,7 @@ Cross-container Communication (Links)
 
 * Container configuration describes links (port numbers) which are required to other containers. E.g. your web application container needs to talk to your database.
 * Connections to any linked port inside the source container are routed to the correct port inside the target container.
-* "Expose PostgreSQL container's port 5432 to the Apache container."
+* Lets you express "Expose PostgreSQL container's port 5432 to the Apache container."
 
 
 Application State
@@ -61,7 +61,7 @@ Application State
 * Flocker manages ZFS filesystems as Docker volumes.  It attaches them to your containers.
 * Flocker provides tools for copying those volumes between machines.
 * If an application container is moved from one machine to another, Flocker automatically moves the volume with it.
-* "The PostgreSQL container has a volume mounted at /var/lib/postgresql/."
+* Lets you express "The PostgreSQL container has a volume mounted at /var/lib/postgresql/."
 
 
 User Experience

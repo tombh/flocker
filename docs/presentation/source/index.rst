@@ -325,10 +325,10 @@ Imagine some yaml files containing the previously given application and deployme
 .. code-block:: sh
 
    $ flocker-cluster deploy application_config.yml deployment_config.yml
-   Deployed `trac` to 203.0.113.2.
-   Deployed `elasticsearch-trac` to 203.0.113.3.
-   Deployed `pgsql-trac` to 203.0.113.2.
-   Deployed `kibana-trac` to 203.0.113.3.
+   203.0.113.2: Deployed `trac`
+   203.0.113.3: Deployed `elasticsearch-trac`
+   203.0.113.2: Deployed `pgsql-trac`
+   203.0.113.3: Deployed `kibana-trac`
    $
 
 
@@ -352,7 +352,7 @@ The deployment configuration changes to:
 .. code-block:: sh
 
    $ flocker-cluster deploy application_config.yml deployment_config.yml
-   Re-deployed pgsql-trac from 203.0.113.2 to 203.0.113.2.
+   203.0.113.3: Deployed `pgsql-trac` (moved from 203.0.113.2)
    $
 
 Note that after pgsql-trac is moved it still has all of the same filesystem state as it had prior to the move.

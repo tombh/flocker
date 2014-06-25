@@ -120,10 +120,13 @@ def make_igearclient_tests(fixture):
             client = fixture(self)
             name = random_name()
             get_result = client.get(name)
-            get_result.addBoth(
-                lambda result: self.failureResultOf(get_result, UnknownUnit))
-            get_result.addCallback(
-                lambda exception: self.assertEqual(name, exception.unit_name))
+            def test_error(failure):
+                """
+                Test the exception type and its value.
+                """
+                failure.trap(UnknownUnit)
+                self.assertEqual(name, failure.value.unit_name)
+            get_result.addBoth(test_error)
             return get_result
 
     return IGearClientTests
@@ -135,7 +138,7 @@ class FakeIGearClientTests(make_igearclient_tests(lambda t: FakeGearClient())):
 
 class WithInitTestsMixin(object):
     """
-    Tests for ``UnknownUnit``.
+    Tests for record classes decorated with ``with_init``.
     """
     record_type = None
     values = None

@@ -192,7 +192,7 @@ class FakeGearClient(object):
         try:
             unit = self._units[unit_name]
         except KeyError:
-            raise UnknownUnit(unit_name=unit_name)
+            return fail(UnknownUnit(unit_name=unit_name))
         return succeed(unit)
 
 

@@ -7,16 +7,18 @@ from ...testtools import random_name
 
 from twisted.trial.unittest import TestCase
 
+
+def cleanup_container(test_case, container_id):
+    """
+    Register a container cleanup function to be run after the test finishes.
+    """
+    test_case.addCleanup(DockerClient().remove, container_id, force=True)
+
+
 class DockerClientCommandTests(TestCase):
     """
     Tests for ``DockerClient.command``.
     """
-    def cleanup_container(self, container_id):
-        """
-        Register a container cleanup function to be run after the test finishes.
-        """
-        self.addCleanup(DockerClient().remove, container_id, force=True)
-
     def test_run(self):
         """
         ``DockerClient.command`` can be used to run a container.
@@ -70,7 +72,7 @@ class DockerClientCommandTests(TestCase):
         def read_container_id(run_stdout_ignored):
             with open(cidfile) as f:
                 container_id = f.read()
-            self.cleanup_container(container_id)
+            cleanup_container(self, container_id)
             return container_id
         d.addCallback(read_container_id)
 
@@ -106,7 +108,7 @@ class DockerClientCommandTests(TestCase):
             container_id of the running container.
             """
             full_container_id = full_container_id.rstrip()
-            self.cleanup_container(full_container_id)
+            cleanup_container(self, full_container_id)
 
             d = client.command([b'stop', full_container_id])
             def check_stopped_container_id(stopped_container_id):
@@ -126,6 +128,16 @@ class DockerClientInspectTests(TestCase):
         ``IDockerClient.inspect`` returns a deferred that fires with the
         configuration of the named container as a nest dictionary.
         """
+        client = DockerClient()
+        name = self.id() + b'_' + random_name()
+        cleanup_container(self, name)
+        d = client.command([b'run', b'--name=%s' % (name,), b'busybox'])
+        d.addCallback(lambda ignored: client.inspect(name))
+        def inspect_output(output):
+            self.assertEqual(b'/' + name, output[0]['Name'])
+        d.addCallback(inspect_output)
+
+        return d
 
     def test_inspect_unknown_container(self):
         """

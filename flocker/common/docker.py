@@ -3,6 +3,7 @@
 """Docker Client"""
 
 import os
+import json
 
 from twisted.internet.endpoints import ProcessEndpoint, connectProtocol
 
@@ -50,6 +51,7 @@ class DockerClient(object):
         """
         """
         d = self.command(['inspect', container_name])
+        d.addCallback(json.loads)
         def handle_command_failed(failure):
             failure.trap(CommandFailed)
             raise UnknownContainer(container_name=container_name)

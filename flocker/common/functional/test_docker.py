@@ -2,7 +2,7 @@
 
 """Functional tests for :module:`flocker.common.docker`."""
 
-from ..docker import DockerClient
+from ..docker import DockerClient, UnknownContainer
 from ...testtools import random_name
 
 from twisted.trial.unittest import TestCase
@@ -117,3 +117,26 @@ class DockerClientCommandTests(TestCase):
         running_container.addCallback(stop_container)
 
         return running_container
+
+
+class DockerClientInspectTests(TestCase):
+
+    def test_inspect(self):
+        """
+        ``IDockerClient.inspect`` returns a deferred that fires with the
+        configuration of the named container as a nest dictionary.
+        """
+
+    def test_inspect_unknown_container(self):
+        """
+        ``IDockerClient.inspect`` raises ``UnknownContainer`` if the named
+        container does not exist.
+        """
+        client = DockerClient()
+        name = random_name()
+        d = client.inspect(name)
+        def test_exception(failure):
+            failure.trap(UnknownContainer)
+            self.assertEqual(name, failure.value.container_name)
+        d.addBoth(test_exception)
+        return d

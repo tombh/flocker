@@ -31,7 +31,7 @@ class IDockerClient(Interface):
         Remove the named container.
         """
 
-    def run(container_name):
+    def run(container_name, image_name):
         """
         Run the named container.
         """
@@ -51,7 +51,7 @@ class DockerClient(object):
             from twisted.internet import reactor
         self._reactor = reactor
 
-    def command(self, arguments):
+    def _command(self, arguments):
         """Run the ``docker`` command-line tool with the given arguments.
 
         :param reactor: A ``IReactorProcess`` provider.
@@ -70,7 +70,7 @@ class DockerClient(object):
         return d
 
     def inspect(self, container_name):
-        d = self.command(['inspect', container_name])
+        d = self._command(['inspect', container_name])
         def handle_command_failed(failure):
             failure.trap(CommandFailed)
             raise UnknownContainer(container_name=container_name)
@@ -80,5 +80,8 @@ class DockerClient(object):
     def remove(self, container_name):
         pass
 
-    def run(self, container_name):
+    def run(self, container_name, image_name):
+        # [b"run", b"--name", self._container_name,
+        #  b"--volume=%s:%s:rw" % (local_path, mount_path),
+        #  b"busybox", b"/bin/true"]
         pass

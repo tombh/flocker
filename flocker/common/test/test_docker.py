@@ -27,13 +27,31 @@ def make_idockerclient_tests(fixture):
             client = fixture(self)
             self.assertTrue(verifyObject(IDockerClient, client))
 
+        def test_running(self):
+            """
+            ``IDockerClient.running`` returns the IDs of all running containers.
+            """
+            client = fixture(self)
+            d = client.running()
+            return d
+
+        def test_run(self):
+            """
+            ``IDockerClient.run`` starts a named docker container based on the
+            given image.
+            """
+            client = fixture(self)
+            name = random_name()
+            image_name = b'busybox'
+            d = client.run(container_name=name, image_name=image_name)
+            d.addCallback
+            return d
 
         def test_inspect(self):
             """
             ``IDockerClient.inspect`` returns a deferred that fires with the
             configuration of the named container as a nest dictionary.
             """
-
 
         def test_inspect_unknown_container(self):
             """

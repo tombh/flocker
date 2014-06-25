@@ -42,13 +42,13 @@ class DockerClientTests(TestCase):
 
         return d
 
-    def assertRunningContainerID(self, container_id, running_container_ids):
-        for short_container_id in running_container_ids:
-            if container_id.startswith(short_container_id):
+    def assertShortContainerID(self, full_container_id, short_container_ids):
+        for short_container_id in short_container_ids:
+            if full_container_id.startswith(short_container_id):
                 return
 
         message = 'docker ps output %r does not include %r.' % (
-            running_container_ids, container_id)
+            short_container_ids, full_container_id)
         self.fail(message)
 
     def test_command_ps(self):
@@ -59,19 +59,24 @@ class DockerClientTests(TestCase):
         check that that container id is listed.
         """
         client = DockerClient()
+        cidfile = self.mktemp()
+        container_name = self.id() + b'_' + random_name()
         d = client._command([b'run',
-                             b'--name=%s' % (self.id(),),
-                             b'--detach',
-                             b'busybox', b'/bin/sleep', b'10']
+                             b'--cidfile=%s' % (cidfile,),
+                             b'--name=%s' % (container_name,),
+                             b'busybox', b'/bin/true']
         )
         def docker_ps(run_stdout):
             """
-            docker run prints the container ID to stdout.
+            List all container IDs (including exited) and check that the
+            recently run container is listed.
             """
-            d = client._command([b'ps', b'--quiet'])
+            d = client._command([b'ps', b'--all', b'--quiet'])
             def check_container_id(ps_stdout):
-                self.assertRunningContainerID(
-                    run_stdout, ps_stdout.splitlines())
+                with open(cidfile) as f:
+                    container_id = f.read()
+                    self.assertShortContainerID(
+                        container_id, ps_stdout.splitlines())
             d.addCallback(check_container_id)
             return d
         d.addCallback(docker_ps)

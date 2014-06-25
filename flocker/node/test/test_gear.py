@@ -7,7 +7,7 @@ from zope.interface.verify import verifyObject
 from twisted.trial.unittest import TestCase
 
 from ...testtools import random_name
-from ..gear import IGearClient, FakeGearClient, AlreadyExists
+from ..gear import IGearClient, FakeGearClient, AlreadyExists, GearUnit, PortMap
 
 
 def make_igearclient_tests(fixture):
@@ -96,8 +96,145 @@ def make_igearclient_tests(fixture):
             d.addCallback(self.assertFalse)
             return d
 
+        def test_get_exists(self):
+            """A ``GearUnit`` is returned"""
+            client = fixture(self)
+            name = random_name()
+            expected = GearUnit(
+                unit_name=random_name(),
+                image_name=u'busybox',
+                ports=[]
+            )
+            d = client.add(expected.unit_name, expected.image_name)
+            d.addCallback(lambda _: client.get(name))
+            d.addCallback(self.assertEqual, expected)
+            return d
+
+
     return IGearClientTests
 
 
 class FakeIGearClientTests(make_igearclient_tests(lambda t: FakeGearClient())):
     """``IGearClient`` tests for ``FakeGearClient``."""
+
+
+class PortMapTests(TestCase):
+    """
+    Tests for ``PortMap``.
+    """
+    def test_init(self):
+        """
+        ``PortMap`` accepts and `internal` and `external` port integers which
+        are exposed as public attributes.
+        """
+        internal_port = 1234
+        external_port = 5678
+        port_map = PortMap(internal=internal_port, external=external_port)
+        self.assertEqual(
+            (internal_port, external_port),
+            (port_map.internal, port_map.external)
+        )
+
+    def test_repr(self):
+        """
+        ``PortMap.__repr__`` shows the internal and external ports.
+        """
+        self.assertEqual(
+            "<PortMap(internal=1234, external=5678)>",
+            repr(PortMap(internal=1234, external=5678))
+        )
+
+    def test_equal(self):
+        """
+        ``PortMap`` instances with the same internal and external ports compare
+        equal.
+        """
+        self.assertEqual(
+            PortMap(internal=1234, external=5678),
+            PortMap(internal=1234, external=5678)
+        )
+
+
+    def test_not_equal(self):
+        """
+        ``PortMap`` instances with the different internal and external ports
+        do not compare equal.
+        """
+        self.assertNotEqual(
+            PortMap(internal=5678, external=1234),
+            PortMap(internal=1234, external=5678)
+        )
+
+
+class GearUnitTests(TestCase):
+    """
+    Tests for ``GearUnit``.
+    """
+    def test_init(self):
+        """
+        ``GearUnit`` accepts `unit_name`, `image_name` and `ports` arguments
+        which are exposed as public attributes.
+        """
+        unit_name = u'busybox-unit'
+        image_name = u'busybox'
+        ports = [
+            PortMap(internal=1234, external=5678)
+        ]
+        unit = GearUnit(unit_name=unit_name, image_name=image_name, ports=ports)
+        self.assertEqual(
+            (unit_name, image_name, ports),
+            (unit.unit_name, unit.image_name, unit.ports)
+        )
+
+    def test_repr(self):
+        """
+        ``GearUnit.__repr__`` shows the unit name, image name and ports.
+        """
+        unit = GearUnit(
+            unit_name=u'busybox-unit',
+            image_name=u'busybox',
+            ports=[PortMap(internal=1234, external=5678)]
+        )
+        self.assertEqual(
+            "<GearUnit("
+            "unit_name=u'busybox-unit', "
+            "image_name=u'busybox', "
+            "ports=[<PortMap(internal=1234, external=5678)>])>",
+            repr(unit)
+        )
+
+    def test_equal(self):
+        """
+        ``GearUnit`` instances with the same attributes compare equal.
+        """
+        u1 = GearUnit(
+            unit_name=u'busybox-unit',
+            image_name=u'busybox',
+            ports=[PortMap(internal=1234, external=5678)]
+        )
+
+        u2 = GearUnit(
+            unit_name=u'busybox-unit',
+            image_name=u'busybox',
+            ports=[PortMap(internal=1234, external=5678)]
+        )
+        self.assertEqual(u1, u2)
+
+
+    def test_not_equal(self):
+        """
+        ``PortMap`` instances with the different internal and external ports
+        do not compare equal.
+        """
+        u1 = GearUnit(
+            unit_name=u'busybox-unit',
+            image_name=u'busybox',
+            ports=[PortMap(internal=1234, external=5678)]
+        )
+
+        u2 = GearUnit(
+            unit_name=u'busybox-variant-unit',
+            image_name=u'busybox-variant',
+            ports=[PortMap(internal=4321, external=8765)]
+        )
+        self.assertNotEqual(u1, u2)

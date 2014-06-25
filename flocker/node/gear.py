@@ -11,6 +11,7 @@ from twisted.internet.defer import succeed, fail
 
 from treq import request, content
 
+from characteristic import attributes
 
 GEAR_PORT = 43273
 
@@ -187,3 +188,18 @@ class FakeGearClient(object):
 
     def get(self, unit_name):
         pass
+
+
+@attributes(['internal', 'external'])
+class PortMap(object):
+    """
+    A record representing the mapping between a port exposed internally by a
+    docker container and the corresponding external port on the host.
+    """
+
+
+@attributes(['unit_name', 'image_name', 'ports'])
+class GearUnit(object):
+    """
+    A record representing a single `geard` unit.
+    """

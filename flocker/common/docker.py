@@ -6,7 +6,7 @@ import os
 
 from twisted.internet.endpoints import ProcessEndpoint, connectProtocol
 
-from ..volume.filesystems.zfs import _AccumulatingProtocol
+from .process import _AccumulatingProtocol
 
 class DockerClient(object):
     """

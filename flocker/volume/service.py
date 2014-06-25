@@ -13,10 +13,7 @@ from characteristic import attributes
 from twisted.application.service import Service
 from twisted.internet import reactor
 
-# We might want to make these utilities shared, rather than in zfs
-# module... but in this case the usage is temporary and should go away as
-# part of https://github.com/hybridlogic/flocker/issues/64
-from .filesystems.zfs import CommandFailed
+from ..common.process import CommandFailed
 from ..common.docker import DockerClient
 
 

@@ -189,7 +189,11 @@ class FakeGearClient(object):
         return succeed(None)
 
     def get(self, unit_name):
-        return succeed(self._units[unit_name])
+        try:
+            unit = self._units[unit_name]
+        except KeyError:
+            raise UnknownUnit(unit_name=unit_name)
+        return succeed(unit)
 
 
 @attributes(['internal', 'external'])
@@ -205,3 +209,8 @@ class GearUnit(object):
     """
     A record representing a single `geard` unit.
     """
+
+
+@attributes(['unit_name'])
+class UnknownUnit(Exception):
+    pass

@@ -158,6 +158,9 @@ class GearClient(object):
         d.addCallback(self._ensure_ok)
         return d
 
+    def get(self, unit_name):
+        pass
+
 
 @implementer(IGearClient)
 class FakeGearClient(object):

@@ -16,6 +16,13 @@ class DockerClientTests(TestCase):
     """
     Tests for implementation specific parts of ``DockerClient``.
     """
+    def _cleanup_container_now(self, container_id):
+        client = DockerClient()
+        return client._command([b'rm', '--force', container_id])
+
+    def cleanup_container(self, container_id):
+        self.addCleanup(self._cleanup_container_now, container_id)
+
     def test_command_run(self):
         """
         ``DockerClient._command`` can be used to run a container.
@@ -66,17 +73,22 @@ class DockerClientTests(TestCase):
                              b'--name=%s' % (container_name,),
                              b'busybox', b'/bin/true']
         )
-        def docker_ps(run_stdout):
+        def read_container_id(run_stdout_ignored):
+            with open(cidfile) as f:
+                container_id = f.read()
+            self.cleanup_container(container_id)
+            return container_id
+        d.addCallback(read_container_id)
+
+        def docker_ps(full_container_id):
             """
             List all container IDs (including exited) and check that the
             recently run container is listed.
             """
             d = client._command([b'ps', b'--all', b'--quiet'])
             def check_container_id(ps_stdout):
-                with open(cidfile) as f:
-                    container_id = f.read()
-                    self.assertShortContainerID(
-                        container_id, ps_stdout.splitlines())
+                self.assertShortContainerID(
+                    full_container_id, ps_stdout.splitlines())
             d.addCallback(check_container_id)
             return d
         d.addCallback(docker_ps)

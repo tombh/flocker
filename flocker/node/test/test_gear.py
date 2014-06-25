@@ -276,51 +276,8 @@ class UnknownUnitTests(WithInitTestsMixin, TestCase):
         """
         ``GearUnit.__repr__`` shows the unit name, image name and ports.
         """
-        unit = GearUnit(
-            unit_name=u'busybox-unit',
-            image_name=u'busybox',
-            ports=[PortMap(internal=1234, external=5678)]
-        )
+        record = UnknownUnit(**self.values)
         self.assertEqual(
-            "<GearUnit("
-            "unit_name=u'busybox-unit', "
-            "image_name=u'busybox', "
-            "ports=[<PortMap(internal=1234, external=5678)>])>",
-            repr(unit)
+            "<UnknownUnit(unit_name=u'busybox-app')>",
+            repr(record)
         )
-
-    def test_equal(self):
-        """
-        ``GearUnit`` instances with the same attributes compare equal.
-        """
-        u1 = GearUnit(
-            unit_name=u'busybox-unit',
-            image_name=u'busybox',
-            ports=[PortMap(internal=1234, external=5678)]
-        )
-
-        u2 = GearUnit(
-            unit_name=u'busybox-unit',
-            image_name=u'busybox',
-            ports=[PortMap(internal=1234, external=5678)]
-        )
-        self.assertEqual(u1, u2)
-
-
-    def test_not_equal(self):
-        """
-        ``PortMap`` instances with the different internal and external ports
-        do not compare equal.
-        """
-        u1 = GearUnit(
-            unit_name=u'busybox-unit',
-            image_name=u'busybox',
-            ports=[PortMap(internal=1234, external=5678)]
-        )
-
-        u2 = GearUnit(
-            unit_name=u'busybox-variant-unit',
-            image_name=u'busybox-variant',
-            ports=[PortMap(internal=4321, external=8765)]
-        )
-        self.assertNotEqual(u1, u2)

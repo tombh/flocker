@@ -56,6 +56,14 @@ class IGearClient(Interface):
         :return: ``Deferred`` that fires on success.
         """
 
+    def get(unit_name):
+        """Return a record of the current state of the given unit.
+
+        :param unicode unit_name: The name of the unit to get.
+
+        :return: ``Deferred`` that fires on success with a ``GearUnit`` object.
+        """
+
 
 @implementer(IGearClient)
 class GearClient(object):
@@ -176,3 +184,6 @@ class FakeGearClient(object):
         if unit_name in self._units:
             del self._units[unit_name]
         return succeed(None)
+
+    def get(self, unit_name):
+        pass

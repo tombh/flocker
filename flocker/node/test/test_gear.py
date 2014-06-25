@@ -101,7 +101,7 @@ def make_igearclient_tests(fixture):
             client = fixture(self)
             name = random_name()
             expected = GearUnit(
-                unit_name=random_name(),
+                unit_name=name,
                 image_name=u'busybox',
                 ports=[]
             )

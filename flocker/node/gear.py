@@ -175,7 +175,9 @@ class FakeGearClient(object):
     def add(self, unit_name, image_name):
         if unit_name in self._units:
             return fail(AlreadyExists(unit_name))
-        self._units[unit_name] = {}
+
+        unit = GearUnit(unit_name=unit_name, image_name=image_name, ports=[])
+        self._units[unit_name] = unit
         return succeed(None)
 
     def exists(self, unit_name):
@@ -187,7 +189,7 @@ class FakeGearClient(object):
         return succeed(None)
 
     def get(self, unit_name):
-        pass
+        return succeed(self._units[unit_name])
 
 
 @attributes(['internal', 'external'])

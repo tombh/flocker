@@ -4,41 +4,29 @@
 
 from ..docker import DockerClient
 from ...testtools import random_name
-from ..test.test_docker import make_idockerclient_tests
 
 from twisted.trial.unittest import TestCase
 
-class IDockerClientTests(make_idockerclient_tests(lambda test_case: DockerClient())):
-    """``IDockerClient`` tests for ``DockerClient``."""
-
-
-class DockerClientTests(TestCase):
+class DockerClientCommandTests(TestCase):
     """
-    Tests for implementation specific parts of ``DockerClient``.
+    Tests for ``DockerClient.command``.
     """
-    def _cleanup_container_now(self, container_id):
-        """
-        Call `docker rm --force` to remove even running containers.
-        """
-        client = DockerClient()
-        return client._command([b'rm', '--force', container_id])
-
     def cleanup_container(self, container_id):
         """
         Register a container cleanup function to be run after the test finishes.
         """
-        self.addCleanup(self._cleanup_container_now, container_id)
+        self.addCleanup(DockerClient().remove, container_id, force=True)
 
-    def test_command_run(self):
+    def test_run(self):
         """
-        ``DockerClient._command`` can be used to run a container.
+        ``DockerClient.command`` can be used to run a container.
 
         The container is started with the `--rm` argument which deletes the test
         container when it exits.
         """
         client = DockerClient()
         expected_environment_variable = b'%s=%s' % (random_name(),random_name())
-        d = client._command([b'run',
+        d = client.command([b'run',
                              b'--rm',
                              b'--env=%s' % (expected_environment_variable,),
                              b'busybox', b'/usr/bin/env']
@@ -64,9 +52,9 @@ class DockerClientTests(TestCase):
             short_container_ids, full_container_id)
         self.fail(message)
 
-    def test_command_ps(self):
+    def test_ps(self):
         """
-        ``DockerClient._command`` can be used to list containers
+        ``DockerClient.command`` can be used to list containers
 
         Create a container and record its container id to a file. Then run ps to
         check that that container id is listed.
@@ -74,7 +62,7 @@ class DockerClientTests(TestCase):
         client = DockerClient()
         cidfile = self.mktemp()
         container_name = self.id() + b'_' + random_name()
-        d = client._command([b'run',
+        d = client.command([b'run',
                              b'--cidfile=%s' % (cidfile,),
                              b'--name=%s' % (container_name,),
                              b'busybox', b'/bin/true']
@@ -91,7 +79,7 @@ class DockerClientTests(TestCase):
             List all container IDs (including exited) and check that the
             recently run container is listed.
             """
-            d = client._command([b'ps', b'--all', b'--quiet'])
+            d = client.command([b'ps', b'--all', b'--quiet'])
             def check_container_id(ps_stdout):
                 self.assertShortContainerID(
                     full_container_id, ps_stdout.splitlines())
@@ -101,15 +89,13 @@ class DockerClientTests(TestCase):
 
         return d
 
-
-
-    def test_command_stop(self):
+    def test_stop(self):
         """
-        ``DockerClient._command`` can be used to stop a container.
+        ``DockerClient.command`` can be used to stop a container.
         """
         client = DockerClient()
         container_name = self.id() + b'_' + random_name()
-        running_container = client._command([b'run',
+        running_container = client.command([b'run',
                                              b'--detach',
                                              b'--name=%s' % (container_name,),
                                              b'busybox', b'/bin/sleep', b'10']
@@ -122,7 +108,7 @@ class DockerClientTests(TestCase):
             full_container_id = full_container_id.rstrip()
             self.cleanup_container(full_container_id)
 
-            d = client._command([b'stop', full_container_id])
+            d = client.command([b'stop', full_container_id])
             def check_stopped_container_id(stopped_container_id):
                 stopped_container_id = stopped_container_id.rstrip()
                 self.assertEqual(full_container_id, stopped_container_id)

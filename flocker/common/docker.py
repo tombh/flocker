@@ -6,8 +6,6 @@ import os
 
 from twisted.internet.endpoints import ProcessEndpoint, connectProtocol
 
-from zope.interface import Interface, implementer
-
 from characteristic import attributes
 
 from .process import _AccumulatingProtocol, CommandFailed
@@ -19,25 +17,6 @@ class UnknownContainer(Exception):
     The named container does not exist.
     """
 
-
-class IDockerClient(Interface):
-    def inspect(container_name):
-        """
-        Return a record of the state of the named docker container.
-        """
-
-    def remove(container_name):
-        """
-        Remove the named container.
-        """
-
-    def run(container_name, image_name):
-        """
-        Run the named container.
-        """
-
-
-@implementer(IDockerClient)
 class DockerClient(object):
     """
     An API for interacting with Docker.
@@ -51,10 +30,8 @@ class DockerClient(object):
             from twisted.internet import reactor
         self._reactor = reactor
 
-    def _command(self, arguments):
+    def command(self, arguments):
         """Run the ``docker`` command-line tool with the given arguments.
-
-        :param reactor: A ``IReactorProcess`` provider.
 
         :param arguments: A ``list`` of ``bytes``, command-line arguments to
         ``docker``.
@@ -70,18 +47,18 @@ class DockerClient(object):
         return d
 
     def inspect(self, container_name):
-        d = self._command(['inspect', container_name])
+        """
+        """
+        d = self.command(['inspect', container_name])
         def handle_command_failed(failure):
             failure.trap(CommandFailed)
             raise UnknownContainer(container_name=container_name)
         d.addErrback(handle_command_failed)
         return d
 
-    def remove(self, container_name):
-        pass
-
-    def run(self, container_name, image_name):
-        # [b"run", b"--name", self._container_name,
-        #  b"--volume=%s:%s:rw" % (local_path, mount_path),
-        #  b"busybox", b"/bin/true"]
-        pass
+    def remove(self, container_name, force=False):
+        args = [b'rm']
+        if force:
+            args.append(b'--force')
+        args.append(container_name)
+        return self.command(args)

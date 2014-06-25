@@ -17,10 +17,16 @@ class DockerClientTests(TestCase):
     Tests for implementation specific parts of ``DockerClient``.
     """
     def _cleanup_container_now(self, container_id):
+        """
+        Call `docker rm --force` to remove even running containers.
+        """
         client = DockerClient()
         return client._command([b'rm', '--force', container_id])
 
     def cleanup_container(self, container_id):
+        """
+        Register a container cleanup function to be run after the test finishes.
+        """
         self.addCleanup(self._cleanup_container_now, container_id)
 
     def test_command_run(self):
@@ -94,3 +100,34 @@ class DockerClientTests(TestCase):
         d.addCallback(docker_ps)
 
         return d
+
+
+
+    def test_command_stop(self):
+        """
+        ``DockerClient._command`` can be used to stop a container.
+        """
+        client = DockerClient()
+        container_name = self.id() + b'_' + random_name()
+        running_container = client._command([b'run',
+                                             b'--detach',
+                                             b'--name=%s' % (container_name,),
+                                             b'busybox', b'/bin/sleep', b'10']
+        )
+        def stop_container(full_container_id):
+            """
+            Attempt to stop the container and check that the stop command returns the
+            container_id of the running container.
+            """
+            full_container_id = full_container_id.rstrip()
+            self.cleanup_container(full_container_id)
+
+            d = client._command([b'stop', full_container_id])
+            def check_stopped_container_id(stopped_container_id):
+                stopped_container_id = stopped_container_id.rstrip()
+                self.assertEqual(full_container_id, stopped_container_id)
+            d.addCallback(check_stopped_container_id)
+            return d
+        running_container.addCallback(stop_container)
+
+        return running_container

@@ -6,7 +6,8 @@ from zope.interface.verify import verifyObject
 
 from twisted.trial.unittest import TestCase
 
-from ..docker import IDockerClient
+from ...testtools import random_name, WithInitTestsMixin
+from ..docker import IDockerClient, UnknownContainer
 
 def make_idockerclient_tests(fixture):
     """
@@ -26,8 +27,32 @@ def make_idockerclient_tests(fixture):
             client = fixture(self)
             self.assertTrue(verifyObject(IDockerClient, client))
 
+
+        def test_inspect(self):
+            """
+            ``IDockerClient.inspect`` returns a deferred that fires with the
+            configuration of the named container as a nest dictionary.
+            """
+
+
+        def test_inspect_unknown_container(self):
+            """
+            ``IDockerClient.inspect`` raises ``UnknownContainer`` if the named
+            container does not exist.
+            """
+            client = fixture(self)
+            name = random_name()
+            d = client.inspect(name)
+            def test_exception(failure):
+                failure.trap(UnknownContainer)
+                self.assertEqual(name, failure.value.container_name)
+            d.addBoth(test_exception)
+            return d
+
     return IDockerClientTests
 
 
 
-
+class UnknownContainerTests(WithInitTestsMixin, TestCase):
+    record_type = UnknownContainer
+    values = dict(container_name=b'busybox-app')

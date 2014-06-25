@@ -6,7 +6,7 @@ from zope.interface.verify import verifyObject
 
 from twisted.trial.unittest import TestCase
 
-from ...testtools import random_name
+from ...testtools import random_name, WithInitTestsMixin
 from ..gear import (
     IGearClient, FakeGearClient, AlreadyExists, GearUnit, PortMap, UnknownUnit
 )
@@ -134,25 +134,6 @@ def make_igearclient_tests(fixture):
 
 class FakeIGearClientTests(make_igearclient_tests(lambda t: FakeGearClient())):
     """``IGearClient`` tests for ``FakeGearClient``."""
-
-
-class WithInitTestsMixin(object):
-    """
-    Tests for record classes decorated with ``with_init``.
-    """
-    record_type = None
-    values = None
-
-    def test_init(self):
-        """
-        The record type accepts keyword arguments which are exposed as public
-        attributes.
-        """
-        record = self.record_type(**self.values)
-        self.assertEqual(
-            self.values.values(),
-            [getattr(record, key) for key in self.values.keys()]
-        )
 
 
 class PortMapTests(WithInitTestsMixin, TestCase):

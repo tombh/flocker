@@ -11,7 +11,6 @@ from ..gear import (
     IGearClient, FakeGearClient, AlreadyExists, GearUnit, PortMap, UnknownUnit
 )
 
-
 def make_igearclient_tests(fixture):
     """
     Create a TestCase for IGearClient.
@@ -104,10 +103,10 @@ def make_igearclient_tests(fixture):
             name = random_name()
             expected = GearUnit(
                 unit_name=name,
-                image_name=u'busybox',
+                image_name=u'openshift/busybox-http-app',
                 ports=[]
             )
-            d = client.add(expected.unit_name, expected.image_name)
+            d = client.add(expected.unit_name, expected.image_name, wait_for_start=True)
             d.addCallback(lambda _: client.get(name))
             d.addCallback(self.assertEqual, expected)
             return d

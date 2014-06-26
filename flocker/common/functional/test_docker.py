@@ -15,6 +15,19 @@ def cleanup_container(test_case, container_id):
     test_case.addCleanup(DockerClient().remove, container_id, force=True)
 
 
+def assert_short_container_id(test_case, full_container_id, short_container_ids):
+    """
+    Assert that a full container ID matches one of the short container IDs.
+    """
+    for short_container_id in short_container_ids:
+        if full_container_id.startswith(short_container_id):
+            return
+
+    message = 'docker ps output %r does not include %r.' % (
+        short_container_ids, full_container_id)
+    test_case.fail(message)
+
+
 class DockerClientCommandTests(TestCase):
     """
     Tests for ``DockerClient.command``.
@@ -28,7 +41,9 @@ class DockerClientCommandTests(TestCase):
         """
         client = DockerClient()
         expected_environment_variable = b'%s=%s' % (random_name(),random_name())
+        container_name = self.id() + b'_' + random_name()
         d = client.command([b'run',
+                             b'--name=%s' % (container_name,),
                              b'--rm',
                              b'--env=%s' % (expected_environment_variable,),
                              b'busybox', b'/usr/bin/env']
@@ -45,15 +60,6 @@ class DockerClientCommandTests(TestCase):
 
         return d
 
-    def assertShortContainerID(self, full_container_id, short_container_ids):
-        for short_container_id in short_container_ids:
-            if full_container_id.startswith(short_container_id):
-                return
-
-        message = 'docker ps output %r does not include %r.' % (
-            short_container_ids, full_container_id)
-        self.fail(message)
-
     def test_ps(self):
         """
         ``DockerClient.command`` can be used to list containers
@@ -69,10 +75,12 @@ class DockerClientCommandTests(TestCase):
                              b'--name=%s' % (container_name,),
                              b'busybox', b'/bin/true']
         )
+
+        cleanup_container(self, container_name)
+
         def read_container_id(run_stdout_ignored):
             with open(cidfile) as f:
                 container_id = f.read()
-            cleanup_container(self, container_id)
             return container_id
         d.addCallback(read_container_id)
 
@@ -83,8 +91,8 @@ class DockerClientCommandTests(TestCase):
             """
             d = client.command([b'ps', b'--all', b'--quiet'])
             def check_container_id(ps_stdout):
-                self.assertShortContainerID(
-                    full_container_id, ps_stdout.splitlines())
+                assert_short_container_id(
+                    self, full_container_id, ps_stdout.splitlines())
             d.addCallback(check_container_id)
             return d
         d.addCallback(docker_ps)
@@ -102,13 +110,14 @@ class DockerClientCommandTests(TestCase):
                                              b'--name=%s' % (container_name,),
                                              b'busybox', b'/bin/sleep', b'10']
         )
+        cleanup_container(self, container_name)
+
         def stop_container(full_container_id):
             """
             Attempt to stop the container and check that the stop command returns the
             container_id of the running container.
             """
             full_container_id = full_container_id.rstrip()
-            cleanup_container(self, full_container_id)
 
             d = client.command([b'stop', full_container_id])
             def check_stopped_container_id(stopped_container_id):
@@ -122,6 +131,9 @@ class DockerClientCommandTests(TestCase):
 
 
 class DockerClientInspectTests(TestCase):
+    """
+    Tests for ``DockerClient.inspect``.
+    """
 
     def test_inspect(self):
         """
@@ -129,14 +141,14 @@ class DockerClientInspectTests(TestCase):
         configuration of the named container as a nest dictionary.
         """
         client = DockerClient()
-        name = self.id() + b'_' + random_name()
-        cleanup_container(self, name)
-        d = client.command([b'run', b'--name=%s' % (name,), b'busybox'])
-        d.addCallback(lambda ignored: client.inspect(name))
+        container_name = self.id() + b'_' + random_name()
+        cleanup_container(self, container_name)
+        d = client.command(
+            [b'run', b'--name=%s' % (container_name,), b'busybox'])
+        d.addCallback(lambda ignored: client.inspect(container_name))
         def inspect_output(output):
-            self.assertEqual(b'/' + name, output[0]['Name'])
+            self.assertEqual(b'/' + container_name, output[0]['Name'])
         d.addCallback(inspect_output)
-
         return d
 
     def test_inspect_unknown_container(self):

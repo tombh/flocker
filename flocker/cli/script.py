@@ -15,6 +15,8 @@ from ..node import ConfigurationError, model_from_configuration
 from ..volume._ipc import ProcessNode
 from ._sshconfig import DEFAULT_SSH_DIRECTORY
 
+from effect import Effect, parallel
+
 
 @flocker_standard_options
 class DeployOptions(Options):
@@ -91,9 +93,24 @@ class DeployScript(object):
         :param bytes deployment_config: YAML-encoded deployment configuration.
         :param bytes application_config: YAML-encoded application configuration.
         """
-        # for destination in self._get_destinations(deployment):
-        #     destination.get_output([b"flocker-changestate", deployment_config,
-        #                             application_config])
+        # return parallel(list(
+        #         Effect(
+        #             ChangeState(
+        #                 deployment_config=deployment_config,
+        #                 application_config=application_config,
+        #                 destination=destination))
+        #             for destination in self._get_destinations(deployment)))
+
+
+from characteristic import attributes
+
+@attributes(["deployment_config", "application_config", "destination"])
+class ChangeState(object):
+    def perform_effect(self, dispatcher):
+        return self.destination.get_output([
+            b"flocker-changestate",
+            self.deployment_config, self.application_config])
+
 
 
 def flocker_deploy_main():

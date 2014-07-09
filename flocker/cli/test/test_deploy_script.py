@@ -140,10 +140,29 @@ class FlockerDeployMainTests(SynchronousTestCase):
     def test_calls_changestate(self):
         """
         ``DeployScript.main`` calls ``flocker-changestate`` using the
-        destinations from ``_get_destinations``.
+        destinations extracted from the configuration.
         """
+        def expected_effect(host):
+            return ChangeState(
+                deployment_config=deployment_config,
+                application_config=application_config,
+                destination=ProcessNode.using_ssh(
+                    host, 22, b"root", private_key))
+
         script = DeployScript()
-        script._get_destinations = destinations = [FakeNode(), FakeNode()]
-        script.main(...)
-        self.assertEqual([node.remote_command for node in destinations],
-                         [b"flocker-changestate", ...])
+        effect = script._changestate_on_nodes(...)
+        self.assertIsInstance(effect, ParallelEffects)
+        self.assertEqual(
+            [expected_effect("node1"), expected_effect("node2")],
+            [eff.intent for eff in effect.effects])
+
+
+class ChangeStateEffectTests(TestCase):
+    def test_perform_effect(self):
+        destination = FakeNode()
+        effect = ChangeState(
+            deployment_config="deployment",
+            application_config="application",
+            destination=destination)
+        perform(effect)
+        self.assertEqual(destination.command, "flocker-changestate ...")

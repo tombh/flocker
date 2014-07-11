@@ -101,6 +101,8 @@ setup(
 
         "netifaces >= 0.8",
         "ipaddr == 2.1.10",
+        # HACK to get the theme installed on RTD
+        "sphinx_bootstrap_theme",
         ],
 
     extras_require={
